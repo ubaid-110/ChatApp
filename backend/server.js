@@ -27,16 +27,33 @@ const createUploadsFolders = () => {
   });
 };
 
-createUploadsFolders();   // ← Yeh line add ki
+createUploadsFolders();
 
-// ==================== REST OF YOUR CODE ====================
+// ==================== APP ====================
 const app = express()
 const server = http.createServer(app)
 
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://yoursite.com'] 
-  : true
+// ✅ FIXED CORS CONFIG (IMPORTANT)
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://chat-app-7221.vercel.app"
+];
 
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // mobile apps / postman
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("CORS not allowed"), false);
+    }
+  },
+  credentials: true
+};
+
+// ==================== SOCKET ====================
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -47,16 +64,21 @@ const io = new Server(server, {
   pingInterval: 25000
 })
 
-app.use(cors({ origin: allowedOrigins }))
+// ==================== MIDDLEWARE ====================
+app.use(cors(corsOptions))
 app.use(express.json())
-app.use('/uploads', express.static('uploads'))   // ← Yeh already hai, sahi hai
+app.use('/uploads', express.static('uploads'))
 
+// ==================== ROUTES ====================
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/messages', messageRoutes)
 
 initSocket(io)
+
+// ==================== DB ====================
 console.log("MONGO_URI =", process.env.MONGO_URI);
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB Connected')
