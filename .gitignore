@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Build folders
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# React/Vite
+.vite/
+
+# MongoDB
+data/
+*.mongodb
+
+# Uploads / temporary files
+uploads/
+temp/
+
+# Coverage
+coverage/
+
+# Cache
+.cache/
+
+# Package lock files (optional)
+# package-lock.json
+# yarn.lock
