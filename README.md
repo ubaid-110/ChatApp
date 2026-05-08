@@ -30,7 +30,7 @@ npm install
 
 `.env` file already bani hui hai. Agar MongoDB Atlas use karna ho:
 ```
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/realchat
+MONGO_URI="mongodb+srv://username:password@cluster.mongodb.net/realchat"
 ```
 
 Backend start karo:
