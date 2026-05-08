@@ -57,7 +57,7 @@ const corsOriginHandler = function (origin, callback) {
 };
 
 const corsOptions = {
-  origin: corsOriginHandler,
+  origin: "*",
   credentials: true
 };
 
