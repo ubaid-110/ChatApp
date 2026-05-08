@@ -1,9 +1,11 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
 import mongoose from 'mongoose'
 import cors from 'cors'
-import dotenv from 'dotenv'
+
 import fs from 'fs'
 import path from 'path'
 
@@ -11,8 +13,6 @@ import authRoutes from './routes/auth.js'
 import userRoutes from './routes/users.js'
 import messageRoutes from './routes/messages.js'
 import { initSocket } from './socket/socket.js'
-
-dotenv.config()
 
 // ==================== CREATE UPLOADS FOLDERS ====================
 const createUploadsFolders = () => {
@@ -56,7 +56,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/messages', messageRoutes)
 
 initSocket(io)
-
+console.log("MONGO_URI =", process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB Connected')
