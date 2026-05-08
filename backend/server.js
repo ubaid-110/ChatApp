@@ -33,7 +33,7 @@ createUploadsFolders();
 const app = express()
 const server = http.createServer(app)
 
-// ✅ FIXED CORS CONFIG (IMPORTANT)
+// ==================== ALLOWED ORIGINS ====================
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
@@ -41,28 +41,31 @@ const allowedOrigins = [
   "https://chat-app-eee3.vercel.app"
 ];
 
+// ==================== CORS FUNCTION (Reusable) ====================
+const corsOriginHandler = function (origin, callback) {
+  if (!origin) return callback(null, true); // Postman / mobile
+
+  if (
+    allowedOrigins.includes(origin) ||
+    /https:\/\/chat-app-.*\.vercel\.app/.test(origin) // ✅ Any chat-app-*.vercel.app
+  ) {
+    return callback(null, true);
+  } else {
+    return callback(new Error("CORS not allowed"), false);
+  }
+};
+
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Sabhi Vercel URLs allow karo tumhare project ke
-    if (!origin) return callback(null, true);
-    
-    if (
-      allowedOrigins.includes(origin) ||
-      /https:\/\/chat-app-.*\.vercel\.app/.test(origin)  // ✅ pattern match
-    ) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("CORS not allowed"), false);
-    }
-  },
+  origin: corsOriginHandler,
   credentials: true
 };
 
 // ==================== SOCKET ====================
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'DELETE']
+    origin: corsOriginHandler, // ✅ Same pattern function for socket too
+    methods: ['GET', 'POST', 'DELETE'],
+    credentials: true
   },
   transports: ['websocket', 'polling'],
   pingTimeout: 60000,
