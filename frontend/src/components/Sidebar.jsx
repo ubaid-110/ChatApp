@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { API, BASE_URL } from '../config'
+import { API } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 import { useTheme } from '../context/ThemeContext'
