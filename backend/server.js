@@ -43,9 +43,13 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // mobile apps / postman
-
-    if (allowedOrigins.includes(origin)) {
+    // Sabhi Vercel URLs allow karo tumhare project ke
+    if (!origin) return callback(null, true);
+    
+    if (
+      allowedOrigins.includes(origin) ||
+      /https:\/\/chat-app-.*\.vercel\.app/.test(origin)  // ✅ pattern match
+    ) {
       return callback(null, true);
     } else {
       return callback(new Error("CORS not allowed"), false);
