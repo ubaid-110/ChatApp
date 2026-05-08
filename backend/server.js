@@ -40,7 +40,6 @@ const allowedOrigins = [
   "https://chat-app-3g81.vercel.app",
   "https://chat-app-eee3.vercel.app",
   "https://chat-app-eee3-jbuj63le3-ubaid-110s-projects.vercel.app"
-
 ];
 
 // ==================== CORS FUNCTION (Reusable) ====================
@@ -65,7 +64,7 @@ const corsOptions = {
 // ==================== SOCKET ====================
 const io = new Server(server, {
   cors: {
-    origin: corsOriginHandler, // ✅ Same pattern function for socket too
+    origin: "*", // ✅ Same pattern function for socket too
     methods: ['GET', 'POST', 'DELETE'],
     credentials: true
   },
