@@ -34,37 +34,37 @@ const app = express()
 const server = http.createServer(app)
 
 // ==================== ALLOWED ORIGINS ====================
-// const allowedOrigins = [
-//   "http://localhost:3000",
-//   "http://localhost:5173",
-//   "https://chat-app-3g81.vercel.app",
-//   "https://chat-app-eee3.vercel.app",
-//   "https://chat-app-eee3-jbuj63le3-ubaid-110s-projects.vercel.app"
-// ];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://chat-app-3g81.vercel.app",
+  "https://chat-app-eee3.vercel.app",
+  "https://chat-app-eee3-jbuj63le3-ubaid-110s-projects.vercel.app",
+];
 
 // ==================== CORS FUNCTION (Reusable) ====================
-// const corsOriginHandler = function (origin, callback) {
-//   if (!origin) return callback(null, true); // Postman / mobile
+const corsOriginHandler = function (origin, callback) {
+  if (!origin) return callback(null, true); // Postman / mobile
 
-//   if (
-//     allowedOrigins.includes(origin) ||
-//     /https:\/\/chat-app-.*\.vercel\.app/.test(origin) // ✅ Any chat-app-*.vercel.app
-//   ) {
-//     return callback(null, true);
-//   } else {
-//     return callback(new Error("CORS not allowed"), false);
-//   }
-// };
+  if (
+    allowedOrigins.includes(origin) ||
+    /https:\/\/chat-app-.*\.vercel\.app/.test(origin) // ✅ Any chat-app-*.vercel.app
+  ) {
+    return callback(null, true);
+  } else {
+    return callback(new Error("CORS not allowed"), false);
+  }
+};
 
 const corsOptions = {
-  origin: "*",
-  // credentials: true
+  origin: corsOriginHandler,
+  credentials: true
 };
 
 // ==================== SOCKET ====================
 const io = new Server(server, {
   cors: {
-    origin: "*", // ✅ Same pattern function for socket too
+    origin: corsOriginHandler, // ✅ Same pattern function for socket too
     methods: ['GET', 'POST', 'DELETE'],
     credentials: true
   },
@@ -74,12 +74,7 @@ const io = new Server(server, {
 })
 
 // ==================== MIDDLEWARE ====================
-
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+app.use(cors(corsOptions))
 app.use(express.json())
 app.use('/uploads', express.static('uploads'))
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useSocket } from '../context/SocketContext'
 import { useTheme } from '../context/ThemeContext'
-import { API } from '../config'
+import { API, SOCKET_URL as BASE_URL } from '../config'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
 import { Mic, Image as ImageIcon, X, Send, Square, Play, Pause } from 'lucide-react'
@@ -374,9 +374,7 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
     ? `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23182229' fill-opacity='0.5'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")`
     : `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c4c4c4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")`
 
-  // ── Render ──────────────────────────────────────────────────
   return (
-    // ✅ FIX: added `relative` so emoji picker can be absolutely positioned
     <div className="relative flex flex-col h-full" style={{ background: t.bg }}>
 
       {/* Header */}
@@ -404,7 +402,6 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1"
         style={{ backgroundImage: bgPattern, backgroundColor: t.bg }}
-        // ✅ FIX: close emoji picker when clicking messages area
         onClick={() => { setContextMenu(null); setShowEmoji(false) }}
       >
         {loading && <div className="text-center text-sm mt-4" style={{ color: t.textSub }}>Loading...</div>}
@@ -520,16 +517,11 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
         </div>
       )}
 
-      {/* ✅ FIX: Emoji Picker — absolutely positioned above bottom bar, no UI shift */}
+      {/* Emoji Picker */}
       {showEmoji && (
         <div
           className="absolute left-0 right-0 z-40 border-t shadow-2xl"
-          style={{
-            bottom: '64px',
-            background: t.bgHeader,
-            borderColor: t.border,
-          }}
-          // Prevent click from bubbling to messages area (which closes picker)
+          style={{ bottom: '64px', background: t.bgHeader, borderColor: t.border }}
           onClick={(e) => e.stopPropagation()}
         >
           <Picker
@@ -547,7 +539,6 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
       {/* BOTTOM BAR */}
       <div className="flex items-center gap-2 px-3 py-2 border-t" style={{ background: t.bgHeader, borderColor: t.border }}>
 
-        {/* STATE 0: IMAGE PREVIEW */}
         {previewImage ? (
           <>
             <button onClick={() => { setPreviewImage(null); setSelectedImageFile(null) }}
@@ -567,7 +558,6 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
           </>
 
         ) : isRecording ? (
-          /* STATE 1: RECORDING */
           <>
             <button onClick={cancelRecording} className="w-10 h-10 flex items-center justify-center flex-shrink-0 hover:text-red-400" style={{ color: t.textSub }}>
               <X size={22} />
@@ -587,7 +577,6 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
           </>
 
         ) : audioBlob && audioBlobUrl ? (
-          /* STATE 2: AUDIO PREVIEW */
           <>
             <button onClick={cancelRecording} className="w-10 h-10 flex items-center justify-center flex-shrink-0 hover:text-red-400" style={{ color: t.textSub }}>
               <X size={22} />
@@ -603,9 +592,7 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
           </>
 
         ) : (
-          /* STATE 3: NORMAL INPUT */
           <>
-            {/* ✅ Emoji button — toggles picker, stops propagation so messages click doesn't close it immediately */}
             <button
               onClick={(e) => { e.stopPropagation(); setShowEmoji(v => !v) }}
               className="w-9 h-9 flex items-center justify-center flex-shrink-0"
