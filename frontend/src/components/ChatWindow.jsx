@@ -41,6 +41,19 @@ function fmtSecs(s) {
   return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`
 }
 
+// ─── FIX: Build image URL with cache-busting ─────────────────
+function buildImageUrl(imagePath, createdAt) {
+  if (!imagePath) return ''
+  if (imagePath.startsWith('data:')) return imagePath
+  // Remove leading slash if BASE_URL already ends with one
+  const base = BASE_URL.replace(/\/$/, '')
+  const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
+  // Use createdAt timestamp as cache-buster so it's stable across reloads
+  // but forces browser to re-fetch instead of using stale cache
+  const ts = createdAt ? new Date(createdAt).getTime() : Date.now()
+  return `${base}${path}?v=${ts}`
+}
+
 function Ticks({ seen, delivered, t }) {
   if (seen) return <span className="text-[13px] leading-none text-[#53bdeb]">✓✓</span>
   if (delivered) return <span className="text-[13px] leading-none" style={{ color: t.textTick }}>✓✓</span>
@@ -385,7 +398,7 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
         <div className="relative flex-shrink-0">
           <div className="w-10 h-10 rounded-full overflow-hidden" style={{ background: contact.avatarColor }}>
             {contact.avatar
-              ? <img src={`${BASE_URL}${contact.avatar}`} alt="dp" className="w-full h-full object-cover block scale-105" />
+              ? <img src={buildImageUrl(contact.avatar, contact.updatedAt)} alt="dp" className="w-full h-full object-cover block scale-105" />
               : <span className="w-full h-full flex items-center justify-center text-white text-sm font-bold">{getInitials(contact.username)}</span>
             }
           </div>
@@ -426,9 +439,19 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
                 {isImg ? (
                   <div className={`relative rounded-xl overflow-hidden ${isOut ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}>
                     <img
-                      src={msg.image.startsWith('data:') ? msg.image : `${BASE_URL}${msg.image}`}
-                      alt="sent" className="w-full block object-cover"
+                      src={buildImageUrl(msg.image, msg.createdAt)}
+                      alt="sent"
+                      className="w-full block object-cover"
                       style={{ maxHeight: '300px', minHeight: '60px' }}
+                      // FIX: onError fallback — try reloading once without cache param
+                      onError={(e) => {
+                        if (!e.target.dataset.retried) {
+                          e.target.dataset.retried = '1'
+                          const base = BASE_URL.replace(/\/$/, '')
+                          const path = msg.image.startsWith('/') ? msg.image : `/${msg.image}`
+                          e.target.src = `${base}${path}`
+                        }
+                      }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-1 right-2 flex items-center gap-1">
@@ -462,7 +485,7 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
                     )}
 
                     {isAud
-                      ? <AudioPlayer src={msg.audio ? `${BASE_URL}${msg.audio}` : msg.audioBlobUrl} isOut={isOut} t={t} />
+                      ? <AudioPlayer src={msg.audio ? buildImageUrl(msg.audio, msg.createdAt) : msg.audioBlobUrl} isOut={isOut} t={t} />
                       : <p style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }} className={isOut ? 'pr-5' : ''}>{msg.text}</p>
                     }
 
@@ -474,11 +497,12 @@ export default function ChatWindow({ contact, onBack, onLastMessage, onUnreadCle
                   </div>
                 )}
 
-                {/* Context menu */}
+                {/* Context menu — FIX: Edit hidden for audio messages */}
                 {contextMenu?.msg?._id === msg._id && (
                   <div className={`absolute z-50 rounded-lg shadow-xl overflow-hidden min-w-[130px] border ${isOut ? 'right-0' : 'left-0'} top-8`}
                     style={{ background: t.bgContextMenu, borderColor: t.border }}>
-                    {!isImg && (
+                    {/* FIX: !isImg && !isAud — Edit only for text messages */}
+                    {!isImg && !isAud && (
                       <button onClick={startEdit} className="w-full text-left px-4 py-2.5 text-sm" style={{ color: t.text }}
                         onMouseEnter={e => e.currentTarget.style.background = t.bgHover}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Edit</button>

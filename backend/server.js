@@ -73,7 +73,7 @@ const io = new Server(server, {
   pingInterval: 25000
 })
 
-// ==================== MIDDLEWARE ====================
+// ==================== MIDDLEWARE ==================== 
 app.use(cors(corsOptions))
 app.use(express.json())
 app.use('/uploads', express.static('uploads'))
@@ -88,7 +88,7 @@ initSocket(io)
 // ==================== DB ====================
 console.log("MONGO_URI =", process.env.MONGO_URI);
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI) 
   .then(() => {
     console.log('✅ MongoDB Connected')
     server.listen(process.env.PORT, '0.0.0.0', () => {
@@ -96,3 +96,4 @@ mongoose.connect(process.env.MONGO_URI)
     })
   })
   .catch(err => console.error('❌ MongoDB Error:', err))
+ 
